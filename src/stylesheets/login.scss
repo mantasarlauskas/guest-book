@@ -1,0 +1,14 @@
+.app-login {
+
+    .app-login-container {
+        @extend %center-element;
+        @extend %container;
+        width: 450px;
+        height: 350px;
+        padding: 40px;
+
+        .section-title {
+            margin-bottom: 60px;
+        }
+    }
+}

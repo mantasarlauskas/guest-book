@@ -1,0 +1,39 @@
+$font: 'Roboto', sans-serif;
+$primary-color: #828282;
+$secondary-color: #0054A6;
+
+%center-element {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+}
+
+%container {
+    background: #FFF;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: $font;
+    background: #F5F7F9;
+}
+
+.clearfix::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.section-title {
+    font-size: 26px;
+    color: $primary-color;
+    border-bottom: 1px solid $primary-color;
+    padding-bottom: 10px;
+}

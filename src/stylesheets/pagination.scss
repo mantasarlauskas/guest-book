@@ -1,0 +1,45 @@
+.pagination-wrapper {
+    position: relative;
+    
+    .pagination {
+        @extend %center-element;
+    
+        li {
+            font-family: 'Open Sans', sans-serif;
+            font-size: 20px;
+            height: 20px;
+            display: inline-block;
+            padding: 0 5px;
+            cursor: pointer;
+            color: $secondary-color;
+        }
+
+        li:active {
+            transform: translateY(1px);
+        }
+
+        li.active {
+            font-weight: bold;
+            border: none;
+        }
+
+        li.previous, li.next {
+            width: 15px;
+            vertical-align: bottom;
+        }
+
+        li.previous {
+            background: url("img/arrow-left.png") center no-repeat;
+        }
+
+        li.previous a, li.next a {
+            display: block;
+            height: 20px;
+        }
+
+        li.next {
+            background: url("img/arrow-right.png") center no-repeat;
+        }
+    }
+}
+

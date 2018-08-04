@@ -1,0 +1,24 @@
+.app-main {
+    .app-main-container, .app-main-header {
+        width: 980px;
+        margin: 0 auto;
+    }
+
+    .app-main-title {
+        font-weight: bold;
+        font-size: 22px;
+        color: $secondary-color;
+        text-transform: uppercase;
+        margin: 35px 0;
+    }
+
+    .app-main-container {
+        @extend %container;
+        padding: 45px 80px 90px 80px;
+        margin-bottom: 80px;
+    }
+    
+    .empty-list {
+        margin-top: 15px;
+    }
+}

@@ -1,0 +1,28 @@
+.menu {
+    height: 42px;
+    background: linear-gradient($secondary-color, $primary-color);
+
+    .menu-item, .menu-item > * {
+        display: inline-block;
+    }
+
+    .menu-item {
+        height: 100%;
+        padding: 0 10px;
+        color: #FFF;
+        border-right: 1px #FFF solid;
+
+        .menu-item-title {
+            margin-right: 5px;
+        }
+    }
+
+    .menu-item:active {
+        transform: translateY(1px);
+    }
+
+    .menu-item > * {
+        vertical-align: middle;
+        line-height: 42px;
+    }
+}
