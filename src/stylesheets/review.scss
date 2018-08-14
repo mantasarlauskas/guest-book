@@ -2,14 +2,27 @@
     margin: 20px 0;
     
     .review {
+        @extend %shadow;
         display: grid;
-        grid-template-columns: 60px max-content 150px 1fr;
-        grid-template-rows: 25px 25px max-content;
+        grid-template-columns: 60px fit-content(100%) 110px minmax(100px, 1fr);
+        grid-template-rows: 25px 25px 1fr;
         margin-bottom: 35px;
+
+        @media only screen and (max-width: 900px) { 
+            grid-template-columns: 60px fit-content(100%) minmax(100px, 1fr);
+            grid-template-rows: 25px 25px 25px 1fr;
+        }
+
+        @media only screen and (max-width: 500px) { 
+            grid-template-columns: 60px minmax(100px, 1fr);
+            grid-template-rows: 25px 25px fit-content(100%) 25px 1fr;
+        }
 
         .review-logo {
             grid-row-start: 1;
             grid-row-end: span 2;
+
+            img { width: 42px; }
         }
 
         .review-name {
@@ -17,45 +30,52 @@
             font-size: 18px;
             line-height: 25px;
             padding-right: 10px;
+            overflow-wrap: break-word;
         }
 
-        .review-stars, .review-action {
-            color: $primary-color;
+        .review-stars, .review-name {
+            @media only screen and (max-width: 900px) { 
+                order: 2;
+                grid-column-start: 1;
+                grid-column-end: three;
+            }
         }
 
-        .review-stars > * {
-            margin-right: 5px;
-        }
+        .review-stars, .review-action { color: $primary-color; }
+
+        .review-stars > * { margin-right: 5px; }
 
         .review-stars > *, .review-action >  * {
             cursor: pointer;
             vertical-align: middle;
         }
 
-        .active-star {
-            color: $secondary-color;
-        }
+        .active-star { color: $secondary-color; }
 
         .review-action >  * {
             float: right;
             width: 18px;
             height: 18px;
             margin-right: 10px;
-        }
-
-        .review-action > *:active {
-            transform: translateY(1px);
+            &:active { transform: translateY(1px); }
         }
 
         .review-date, .review-comment {
             font-size: 14px;
             line-height: 16px;
+
+            @media only screen and (max-width: 900px) { 
+                order: 2;
+                margin: 5px 0;
+            }
         }
 
         .review-date {
             grid-column-start: 2;
             grid-column-end: three;
             color: #BDBDBD;
+
+            @media only screen and (max-width: 900px) { grid-column-start: 1; }
         }
 
         .review-comment {
@@ -63,6 +83,19 @@
             grid-column-end: three;
             color: $primary-color;
             margin-top: 20px;
+            word-wrap: break-word;
+
+            @media only screen and (max-width: 900px) { margin-top: 0; }
+        }
+    }
+    .children {
+        margin-left: 15px;
+
+        @media only screen and (max-width: 900px) { margin-left: 0; }
+
+        .review {
+            border-left: 4px $secondary-color solid;
+            padding-left: 10px;
         }
     }
 }

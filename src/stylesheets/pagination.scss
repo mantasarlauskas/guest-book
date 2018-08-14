@@ -12,33 +12,27 @@
             padding: 0 5px;
             cursor: pointer;
             color: $secondary-color;
-        }
+            
+            &:active { transform: translateY(1px); }
 
-        li:active {
-            transform: translateY(1px);
-        }
-
-        li.active {
-            font-weight: bold;
-            border: none;
-        }
-
-        li.previous, li.next {
-            width: 15px;
-            vertical-align: bottom;
-        }
-
-        li.previous {
-            background: url("img/arrow-left.png") center no-repeat;
-        }
-
-        li.previous a, li.next a {
-            display: block;
-            height: 20px;
-        }
-
-        li.next {
-            background: url("img/arrow-right.png") center no-repeat;
+            &.active {
+                font-weight: bold;
+                border: none;
+            }
+    
+            &.previous, &.next {
+                width: 15px;
+                vertical-align: bottom;
+            }
+    
+            &.previous { background: url("img/arrow-left.png") center no-repeat; }
+    
+            &.previous a, &.next a {
+                display: block;
+                height: 20px;
+            }
+    
+            &.next { background: url("img/arrow-right.png") center no-repeat; }
         }
     }
 }

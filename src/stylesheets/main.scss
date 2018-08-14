@@ -2,6 +2,8 @@
     .app-main-container, .app-main-header {
         width: 980px;
         margin: 0 auto;
+
+        @media only screen and (max-width: 1140px) { width: 90%; }
     }
 
     .app-main-title {
@@ -16,9 +18,12 @@
         @extend %container;
         padding: 45px 80px 90px 80px;
         margin-bottom: 80px;
+        
+        @media only screen and (max-width: 1140px) { 
+            padding-left: 40px;
+            padding-right: 40px;
+        }  
     }
     
-    .empty-list {
-        margin-top: 15px;
-    }
+    .empty-list { margin-top: 15px; }
 }

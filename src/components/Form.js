@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
 import Input from './Input';
+import Form from 'react-validation/build/form';
 
-class Form extends Component {
+class FormComponent extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            inputs: []
+            inputs: [],
+            inputData: {}
         };
         this.handleFieldChange = this.handleFieldChange.bind(this);
         this.submitForm = this.submitForm.bind(this);
@@ -13,30 +15,38 @@ class Form extends Component {
         this.displayTextarea = this.displayTextarea.bind(this);
     }
 
-    componentWillMount() {      
+    componentWillMount() {     
         this.setState({ inputs: this.props.inputs });
     }
 
     componentDidUpdate() {
-        if(this.props.changed === true) {
-            this.setState({ inputs: this.props.inputs });
-            this.props.onChange();
+        if(this.props.fieldsChanged === true) {
+            this.setState({ inputs: this.props.inputs }, this.props.onLoad);
         }
     }
 
-    handleFieldChange(name, value) {
-        this.setState(prevState =>({
-            inputs: prevState.inputs.map(input => name === input.id ? {...input, value: value} : input)
+    handleFieldChange(name, value, input) {
+        this.setState(prevState => ({
+            inputs: prevState.inputs.map(input => name === input.id ? {...input, value: value} : input),
+            inputData: {
+                ...prevState.inputData,
+                [name]: input
+            }
         }));
     }
 
     submitForm(e) {
+        const { inputs, inputData } = this.state; 
         e.preventDefault();
-        this.props.editing ? this.props.onEdit(this.props.editID, this.state.inputs) : this.props.onSubmit(this.state.inputs);
+        inputs.forEach(input => this.form.validate(input.id));
+        if(this.form.getChildContext()._errors.length === 0) {
+            Object.keys(inputData).forEach(key => this.form.hideError(inputData[key]));
+            this.props.editing ? this.props.onEdit(this.props.editID, inputs) : this.props.onSubmit(inputs);  
+        }
     }
 
     displayInput(input) {
-        return input.input === "normal" ?  (
+        return input.input === "normal" &&  (
             <Input key={input.id}
                    input={input.input}
                    id={input.id}
@@ -45,32 +55,36 @@ class Form extends Component {
                    onChange={this.handleFieldChange}
                    value={input.value}
                    editing={this.props.editing} />
-        ) : null;
+        );
     }
 
     displayTextarea(input) {
-        return input.input === "textarea" ? (
+        return input.input === "textarea" && (
             <Input key={input.id}
-                    input={input.input}
-                    id={input.id}
-                    name={input.name}
-                    onChange={this.handleFieldChange}
-                    value={input.value}
-                    editing={this.props.editing} />
-        ) : null;
+                   input={input.input}
+                   id={input.id}
+                   name={input.name}
+                   onChange={this.handleFieldChange}
+                   value={input.value}
+                   editing={this.props.editing} />
+        );
     }
 
     render() {
+        const { grid, editing, reply } = this.props;
         return (
-            <form onSubmit={this.submitForm} className="review-form clearfix">
-                <div className={this.props.grid ? "input-grid" : undefined}>
-                    {this.state.inputs.map(this.displayInput)}
+            <Form ref={c => { this.form = c }} 
+                  onSubmit={this.submitForm} 
+                  className={reply ? "review-form clearfix reply-form" : "review-form clearfix"} 
+                  noValidate>
+                <div className={grid ? "input-grid" : undefined}>
+                    { this.state.inputs.map(this.displayInput) }
                 </div>
-                {this.state.inputs.map(this.displayTextarea)}
-                <button className="button">{this.props.editing ? "Redaguoti" : "Siųsti"}</button>
-            </form>
+                { this.state.inputs.map(this.displayTextarea) }
+                <button className="button">{ editing ? "Redaguoti" : "Siųsti" }</button>
+            </Form>
         )
     }
 }
 
-export default Form;
+export default FormComponent;

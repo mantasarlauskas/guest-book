@@ -1,7 +1,10 @@
 import React, { Component } from 'react';
+import Input from 'react-validation/build/input';
+import Textarea from 'react-validation/build/textarea';
+import { required, email } from './FormValidation';
 
 
-class Input extends Component {
+class InputComponent extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -12,11 +15,12 @@ class Input extends Component {
         this.renderTextarea = this.renderTextarea.bind(this);
     }
 
-    componentDidUpdate(prevState) {
-        if(this.props.value !== prevState.value) {
+    componentDidUpdate(prevProps) {
+        if(this.props.value !== prevProps.value) {
             this.setState({
                 value: this.props.value
-            })
+            }); 
+            this.props.onChange(this.props.id, this.props.value, this.userInput)
         }
     }
 
@@ -24,18 +28,22 @@ class Input extends Component {
         this.setState({
             value: event.target.value
         })
-        this.props.onChange(this.props.id, event.target.value);
+        this.props.onChange(this.props.id, event.target.value, this.userInput);
     }
 
     renderInput() {
         const { id, type, editing } = this.props;
         const { value } = this.state;
         return (
-            <input value={value} 
+            <Input value={value} 
                    onChange={this.handleChange} 
+                   ref={c => { this.userInput = c }}
                    id={id} 
+                   name={id}
                    type={type}
-                   required
+                   isChanged
+                   maxLength={type === "email" ? 50 : 20}
+                   validations={type === "email" ? [required, email] : [required]}
                    className={editing ? "edit-input" : undefined} />
         )
     }
@@ -44,10 +52,14 @@ class Input extends Component {
         const { id, editing } = this.props;
         const { value } = this.state;
         return (
-            <textarea value={value} 
+            <Textarea value={value} 
                       onChange={this.handleChange} 
+                      ref={c => { this.userInput = c }}
                       id={id}
-                      required
+                      name={id}
+                      maxLength={250}
+                      validations={[required]}
+                      isChanged
                       className={editing ? "edit-input" : undefined} />
         )
     }
@@ -56,11 +68,11 @@ class Input extends Component {
         const { id, name, input } = this.props;
         return (
             <div className="review-input">
-                <label htmlFor={id}>{name}</label>
-                {input === "normal" ?  this.renderInput() : input === "textarea" ? this.renderTextarea() : null}
+                <label htmlFor={id}>{ name }</label>
+                { input === "normal" ?  this.renderInput() : input === "textarea" ? this.renderTextarea() : null }
              </div>
         )
     }
 }
 
-export default Input;
+export default InputComponent;

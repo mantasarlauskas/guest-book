@@ -8,11 +8,13 @@ class Main extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      pageNumber: 0,
+      itemsPerPage: 5,
       reviews: [],
       filteredReviews: [],
       editing: false,
-      editID: null,
-      changed: false,
+      editID: undefined,
+      fieldsChanged: false,
       formInputs: [
         {
           input: "normal",
@@ -43,36 +45,135 @@ class Main extends Component {
         },
       ]
     }
-    this.pageNumber = 0;
     this.addReview = this.addReview.bind(this);
-    this.submitEdit = this.submitEdit.bind(this);
-    this.addStars = this.addStars.bind(this);
-    this.setID = this.setID.bind(this);
-    this.handlePageClick = this.handlePageClick.bind(this);
-    this.filterReviewsByPage = this.filterReviewsByPage.bind(this);
     this.editReview = this.editReview.bind(this);
+    this.submitEdit = this.submitEdit.bind(this);
+    this.resetFormInputs = this.resetFormInputs.bind(this);
+    this.addStars = this.addStars.bind(this);
     this.deleteReview = this.deleteReview.bind(this);
-    this.setBaseState = this.setBaseState.bind(this);
-    this.clearFieldsSuccess = this.clearFieldsSuccess.bind(this);
+    this.reply = this.reply.bind(this);
+    this.changeChildren = this.changeChildren.bind(this);
+    this.resetFieldsChanged = this.resetFieldsChanged.bind(this);
+    this.handlePageClick = this.handlePageClick.bind(this);
+    this.displayForm = this.displayForm.bind(this);
+    this.displayReview = this.displayReview.bind(this);
+    this.displayPagination = this.displayPagination.bind(this);
+  }
+
+  componentDidMount() {
+    let id = 0;
+    fetch('https://randomapi.com/api/zpw4acqb?key=ZGJL-LPK9-YXW8-9E3V&results=1')
+      .then(response => response.json())
+      .then(people => {
+        if(people.results) {
+          this.setState({
+            reviews: people.results.map(review => ({...review.customer, id: id++, children: []}))
+          })
+        }
+      });
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if(this.state.reviews !== prevState.reviews || this.state.pageNumber !== prevState.pageNumber) {
+      const { pageNumber, itemsPerPage } = this.state, begin = pageNumber * itemsPerPage, end = begin + itemsPerPage;
+      this.setState(prevState => {
+        const reversedReviews = prevState.reviews.slice(0).reverse();
+        return {
+          filteredReviews: reversedReviews.length > itemsPerPage ? reversedReviews.slice(begin, end) : reversedReviews
+        }
+      });
+    }
+  }
+
+  maxID(max, reviews) {
+    reviews.forEach(review => {
+      max = review.id > max ? review.id : max;
+      max = review.children.length > 0 ? this.maxID(max, review.children) : max;
+    });
+    return max;
   }
 
   addReview(review) {
     let newReview = {}; 
     review.forEach(reviewData => newReview[reviewData.id] = reviewData.value);
     this.setState(prevState => (
+      {
+        reviews: [
+          ...prevState.reviews,
+          {
+            ...newReview,
+            id: this.maxID(-1, prevState.reviews) + 1,
+            date: new Date(),
+            children: []
+          }
+        ],
+        fieldsChanged: true
+      }
+    ));
+  }
+
+  findReviewById(id, reviews) {
+    for(let review of reviews) {
+      if(review.id === id) return review;
+      if(review.children.length > 0) {
+        const review_ = this.findReviewById(id, review.children);
+        if(review_) return review_;
+      }
+    }
+  }
+
+  editReview(id) {
+    const review = this.findReviewById(id, this.state.reviews);     
+    this.setState(prevState => ({
+      editing: true,
+      editID: review.id,
+      fieldsChanged: true,
+      formInputs: prevState.formInputs.map(input => {
+        Object.keys(review).forEach(k => input.value = k === input.id ? review[k] : input.value);
+        return input;
+      })      
+    }));
+  }
+
+  changeReviewData(newReview, oldReview) {
+    return {
+      ...newReview, 
+      logo: oldReview.logo, 
+      id: oldReview.id,
+      stars: oldReview.stars, 
+      date: new Date(),
+      children: oldReview.children
+    }
+  }
+
+  changeStarsCount(stars, oldReview) {
+    return {
+      ...oldReview, 
+      stars: stars
+    }
+  }
+
+  changeChildren(newReply, oldReview) {
+    return {
+      ...oldReview,
+      children: [
+        ...oldReview.children,
         {
-          reviews: [
-            ...prevState.reviews,
-            {
-              ...newReview,
-              id: this.setID(),
-              date: new Date()
-            }
-          ],
-          changed: true
+          ...newReply,
+          id: this.maxID(-1, this.state.reviews) + 1,
+          date: new Date(),
+          children: []
         }
-      )
-    );
+      ]
+    }
+  }
+
+  changeReview(id, newData, reviews, action) {
+    return reviews.map(review => {
+      if(review.id === id) return action(newData, review);  
+      if(review.children.length > 0) return { ...review, children: this.changeReview(id, newData, review.children, action) };
+      return review;
+    });
   }
 
   submitEdit(id, review) {
@@ -80,78 +181,102 @@ class Main extends Component {
     review.forEach(reviewData => newReview[reviewData.id] = reviewData.value);
     this.setState(prevState => ({
       editing: false,
-      editID: null,
-      reviews: prevState.reviews.map(review => review.id !== id ? review : {...newReview, id: review.id, date: new Date()})
-    }), this.setBaseState);
+      editID: undefined,
+      reviews: this.changeReview(id, newReview, prevState.reviews, this.changeReviewData)
+    }), this.resetFormInputs);
   }
 
-  setBaseState() {
+  resetFormInputs() {
     this.setState(prevState => ({
         formInputs: prevState.formInputs.map(input => ({...input, value: ''})),
-        changed: true
+        fieldsChanged: true
     }));
-  }
-
-  deleteReview(id) {
-    this.setState(prevState => ({
-      reviews: prevState.reviews.filter(review => review.id !== id)
-    }))
-  }
-
-  setID() {
-    const { reviews } = this.state;
-    return reviews.length === 0 ? 0 : reviews[reviews.length - 1].id + 1;
-  }
-
-  clearFieldsSuccess() {
-    this.setState({
-      changed: false
-    });
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.reviews.length !== prevState.reviews.length || this.state.reviews !== prevState.reviews) {
-      this.filterReviewsByPage();
-    }
   }
 
   addStars(id, stars) {
     this.setState(prevState => ({
-        reviews: prevState.reviews.map(review => review.id !== id ? review : {...review, stars: stars})
+        reviews: this.changeReview(id, stars, prevState.reviews, this.changeStarsCount)
     }));
   }
 
-  filterReviewsByPage() {
-    const begin = this.pageNumber * 5, end = begin + 5;
+  filterReviews(id, reviews) {
+    return reviews.filter(review => review.id !== id).map(review => {
+      if(review.children.length > 0) return { ...review, children: this.filterReviews(id, review.children) };
+      return review;
+    });
+  }
+
+  deleteReview(id) {
     this.setState(prevState => ({
-      filteredReviews: prevState.reviews.length > 5 ? prevState.reviews.slice(begin, end) : prevState.reviews
+      reviews: this.filterReviews(id, prevState.reviews)
+    }))
+  }
+
+  reply(id, inputs) {
+    let answers = {}; 
+    inputs.forEach(inputData => answers[inputData.id] = inputData.value);
+    this.setState(prevState => ({
+      reviews: this.changeReview(id, answers, prevState.reviews, this.changeChildren),
+      fieldsChanged: true
     }));
+  }
+
+  resetFieldsChanged() {
+    this.setState({
+      fieldsChanged: false
+    });
   }
 
   handlePageClick(data) {
-    this.pageNumber = data.selected;
-    this.filterReviewsByPage();
+    this.setState({
+      pageNumber: data.selected
+    });
   }
 
-  editReview(id) {
-    const review = this.state.reviews.find(review => review.id === id);
-    const inputs = this.state.formInputs;
-    inputs.forEach(input => {
-      Object.keys(review).forEach(k => {
-        if(k === input.id) {
-          input.value = review[k];
-        }
-      });
-    });
-    this.setState({
-      editing: true,
-      editID: review.id,
-      formInputs: inputs       
-    });
+  displayForm() {
+    const { editing, fieldsChanged, editID, formInputs } = this.state;
+    return (
+      <Form editing={editing}
+            grid={true}
+            fieldsChanged={fieldsChanged}
+            editID={editID} 
+            inputs={formInputs} 
+            onLoad={this.resetFieldsChanged}
+            onSubmit={this.addReview} 
+            onEdit={this.submitEdit} />
+    )
+  }
+
+  displayReview(review) {
+    const { formInputs, editing } = this.state;
+    return (
+      <Review key={review.id}
+              inputs={formInputs} 
+              data={review}
+              editing={editing} 
+              onRate={this.addStars}
+              onEdit={this.editReview}
+              onDelete={this.deleteReview}
+              onReply={this.reply} />
+    )
+  }
+
+  displayPagination() {
+    const { reviews, itemsPerPage } = this.state;
+    return (
+      <ReactPaginate previousLabel=""
+                     nextLabel=""
+                     pageCount={Math.ceil(reviews.length/itemsPerPage)}
+                     marginPagesDisplayed={1}
+                     pageRangeDisplayed={5}
+                     onPageChange={this.handlePageClick}
+                     containerClassName={"pagination"}
+                     activeClassName={"active"} />
+    )
   }
 
   render() {
-    const { editing, reviews, filteredReviews, formInputs, editID, changed } = this.state;
+    const { reviews, filteredReviews, itemsPerPage } = this.state;
     return (
       <div className="app-main">
         <Menu />
@@ -160,38 +285,13 @@ class Main extends Component {
         </header>
         <div className="app-main-container">
           <div className="section-title">Atsiliepimo forma</div>
-          <Form editing={editing}
-                grid={true}
-                changed={changed}
-                editID={editID} 
-                inputs={formInputs} 
-                onChange={this.clearFieldsSuccess}
-                onSubmit={this.addReview} 
-                onEdit={this.submitEdit} />
+          { this.displayForm() }
           <div className="section-title">Atsiliepimai</div>
           <div className="reviews">
-            {
-              reviews.length ? filteredReviews.map(review => <Review key={review.id} 
-                                                                     data={review}
-                                                                     editing={editing} 
-                                                                     onRate={this.addStars}
-                                                                     onEdit={this.editReview}
-                                                                     onDelete={this.deleteReview} />) :
-              <div className="empty-list">Atsiliepimų nėra</div>
-            }
+            { reviews.length ? filteredReviews.map(this.displayReview) : <div className="empty-list">Atsiliepimų nėra</div> }
           </div>
           <div className="pagination-wrapper">
-            {
-              reviews.length > 5 ? <ReactPaginate previousLabel=""
-                                                  nextLabel=""
-                                                  pageCount={Math.ceil(reviews.length/5)}
-                                                  marginPagesDisplayed={1}
-                                                  pageRangeDisplayed={5}
-                                                  onPageChange={this.handlePageClick}
-                                                  containerClassName={"pagination"}
-                                                  subContainerClassName={"pages pagination"}
-                                                  activeClassName={"active"} /> : null
-            }
+            { reviews.length > itemsPerPage && this.displayPagination() }
           </div>
         </div>
       </div>

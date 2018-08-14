@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { browserHistory } from 'react-router';
 import Menu from './Menu';
 import Form from './Form';
 
@@ -17,16 +18,22 @@ class Login extends Component {
             ]
         }
         this.submitLogin = this.submitLogin.bind(this);
+        this.logout = this.logout.bind(this);
     }
 
-    submitLogin(ha) {
-        console.log(ha);
+    submitLogin(password) {
+        sessionStorage.setItem('userLoggedIn', true);
+        browserHistory.push('/');
+    }
+
+    logout() {
+        console.log("a");
     }
 
     render() {
         return (
             <div className="app-login">
-                <Menu />
+                <Menu onLogout={this.logout}/>
                 <div className="app-login-container">
                     <div className="section-title">Prisijungimas</div>
                     <Form grid={false}
