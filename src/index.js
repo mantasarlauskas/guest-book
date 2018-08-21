@@ -1,18 +1,22 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Main from './components/Main';
-import Login from './components/Login';
-import './index.css';
+import Main from './components/containers/MainContainer';
 import { Router, Route, browserHistory  } from 'react-router';
-import registerServiceWorker from './registerServiceWorker';
+import { Provider } from 'react-redux';
+import { createStore, applyMiddleware } from 'redux';
+import thunk from 'redux-thunk';
+import rootReducer from './reducers/index';
+import { getData } from './actions';
+import logger from 'redux-logger';
 
-const requireAuth = (nextState, replace) => !sessionStorage.getItem('userLoggedIn') ? true : replace('/');
+const store = createStore(rootReducer, applyMiddleware(thunk, logger));
+store.dispatch(getData(10));
 
 ReactDOM.render(
-    <Router history={browserHistory}>
-        <Route path="/" component={Main} />
-        <Route path="/login" component={Login} onEnter={requireAuth} />
-    </Router>, 
+    <Provider store={store}>
+        <Router history={browserHistory}>
+            <Route path="/" component={Main} />
+        </Router>
+    </Provider>, 
     document.getElementById('root')
 );
-registerServiceWorker();

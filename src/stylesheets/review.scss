@@ -1,12 +1,13 @@
 .reviews {
     margin: 20px 0;
-    
+
     .review {
         @extend %shadow;
         display: grid;
         grid-template-columns: 60px fit-content(100%) 110px minmax(100px, 1fr);
         grid-template-rows: 25px 25px 1fr;
-        margin-bottom: 35px;
+        margin-bottom: 20px;
+        background: #FFF;
 
         @media only screen and (max-width: 900px) { 
             grid-template-columns: 60px fit-content(100%) minmax(100px, 1fr);
@@ -97,5 +98,12 @@
             border-left: 4px $secondary-color solid;
             padding-left: 10px;
         }
+    }
+    .review-dark-wrapper {
+        background: #f2f2f2;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        @extend %shadow;
     }
 }
