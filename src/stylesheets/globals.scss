@@ -1,6 +1,7 @@
 $font: 'Roboto', sans-serif;
 $primary-color: #828282;
 $secondary-color: #0054A6;
+$background-color: #F5F7F9;
 
 %center-element {
     position: absolute;
@@ -27,7 +28,7 @@ $secondary-color: #0054A6;
 
 body {
     font-family: $font;
-    background: #F5F7F9;
+    background: $background-color;
 }
 
 .clearfix::after {
